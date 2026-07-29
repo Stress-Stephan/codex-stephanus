@@ -359,7 +359,7 @@ h1{
 .actor__book{opacity:0}
 .actor.has-book .actor__book{opacity:1}
 
-/* Das Gespenst ist nur ein beiläufiges Hintergrunddetail. */
+/* Das Gespenst bleibt ein Hintergrunddetail, ist aber deutlich besser erkennbar. */
 .ghost-stage{
   position:absolute;
   left:7%;
@@ -377,7 +377,7 @@ h1{
   width:165px;
   height:118px;
   opacity:0;
-  transform:scale(.56);
+  transform:scale(.81);
   will-change:left,top,transform,opacity;
 }
 .ghost-image{
@@ -395,17 +395,17 @@ h1{
   animation:ghostAmbient 34s ease-in-out infinite;
 }
 @keyframes ghostAmbient{
-  0%{left:-220px;top:38%;opacity:0;transform:translateY(0) scale(.52) rotate(-2deg)}
+  0%{left:-220px;top:38%;opacity:0;transform:translateY(0) scale(.75) rotate(-2deg)}
   8%{opacity:.36}
-  20%{left:18%;top:30%;opacity:.18;transform:translateY(-10px) scale(.54) rotate(1deg)}
-  34%{left:36%;top:40%;opacity:.42;transform:translateY(7px) scale(.56) rotate(-1deg)}
-  48%{left:56%;top:28%;opacity:.16;transform:translateY(-8px) scale(.55) rotate(1deg)}
-  62%{left:78%;top:39%;opacity:.40;transform:translateY(6px) scale(.53) rotate(-1deg)}
-  74%{left:102%;top:31%;opacity:0;transform:translateY(-5px) scale(.51) rotate(2deg)}
-  75%{left:102%;top:31%;opacity:0;transform:scaleX(-1) scale(.51)}
+  20%{left:18%;top:30%;opacity:.18;transform:translateY(-10px) scale(.78) rotate(1deg)}
+  34%{left:36%;top:40%;opacity:.42;transform:translateY(7px) scale(.81) rotate(-1deg)}
+  48%{left:56%;top:28%;opacity:.16;transform:translateY(-8px) scale(.80) rotate(1deg)}
+  62%{left:78%;top:39%;opacity:.40;transform:translateY(6px) scale(.77) rotate(-1deg)}
+  74%{left:102%;top:31%;opacity:0;transform:translateY(-5px) scale(.74) rotate(2deg)}
+  75%{left:102%;top:31%;opacity:0;transform:scaleX(-1) scale(.74)}
   83%{opacity:.35}
-  91%{left:42%;top:36%;opacity:.20;transform:translateY(5px) scaleX(-1) scale(.54)}
-  100%{left:-220px;top:28%;opacity:0;transform:translateY(-7px) scaleX(-1) scale(.52)}
+  91%{left:42%;top:36%;opacity:.20;transform:translateY(5px) scaleX(-1) scale(.78)}
+  100%{left:-220px;top:28%;opacity:0;transform:translateY(-7px) scaleX(-1) scale(.75)}
 }
 .knock-book{display:none!important}
 
