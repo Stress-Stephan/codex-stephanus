@@ -1079,6 +1079,13 @@ html,body{background:#382316}
 }
 
 </style>
+<style>
+/* Fester Ausgang funktioniert auch beim direkten Aufruf und im Website-Embed. */
+#bookSignHandle{width:60%;right:auto}
+.book-sign__exit{left:60%;right:0;width:40%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;text-decoration:none;border-left:2px solid rgba(74,41,22,.72);font-size:clamp(18px,2vw,28px);padding:7px 8px 6px;letter-spacing:.03em}
+.book-sign__exit:focus-visible,#bookSignHandle:focus-visible{outline:3px solid #6e201c;outline-offset:-5px}
+@media(max-width:600px){.book-sign__exit{font-size:clamp(17px,4.6vw,25px)}}
+</style>
 </head>
 <body>
 <main class="scene" id="scene">
@@ -1112,6 +1119,7 @@ html,body{background:#382316}
     <section id="bookSign" class="book-sign" data-view="closed">
       <div id="bookSignBody" class="book-sign__body" aria-live="polite" aria-hidden="true"></div>
       <button id="bookSignHandle" class="book-sign__handle" type="button" aria-expanded="false" aria-controls="bookSignBody">Bücher</button>
+      <a class="book-sign__handle book-sign__exit" href="https://stephan-universum.de/" target="_top" aria-label="Bibliothek verlassen – zum Stephan-Universum" title="Zurück zum Stephan-Universum">Ausgang →</a>
     </section>
   </nav>
 
