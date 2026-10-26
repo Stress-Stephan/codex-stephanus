@@ -48,3 +48,8 @@
 
 #soundToggle{position:fixed;z-index:30;right:22px;top:78px;padding:10px 14px;color:#ead5ae;background:#17140ee8;border:1px solid #a78b5c88;font-size:11px;box-shadow:0 3px 15px #0006}
 @media(max-width:750px){#soundToggle{right:18px;top:68px;font-size:10px;padding:9px 11px}}
+
+/* Die Schmiede als wandfüllender Blick in einen weiteren Raum. */
+.immersive-mural{padding:0;border:0;border-radius:0;box-shadow:none;background:#21150d;overflow:hidden}
+.immersive-mural img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 43%;pointer-events:none}
+.immersive-mural:hover{background:#21150d;border:0;filter:brightness(1.04)}

@@ -31,9 +31,7 @@ function buildRoom(append=false){
  plane('stone',-1350,-1000,3000,2700,1300);
  plane('floor',-1350,300,3000,2700,3000,'rotateX(90deg)');
  plane('stone ceiling',-1350,-1000,0,2700,3000,'rotateX(-90deg)');
- const sign=object('room-sign',-620,-985,2980,1240,70);sign.innerHTML='DIE WAFFENKAMMER<small>30 KLEINE FLUCHTEN AUS DEM GRAU</small>';
- const mural=object('chamber-mural',-430,-990,2970,860,1290,'','button');mural.setAttribute('aria-label','Das große Schmiedebild betrachten');mural.innerHTML='<img src="assets/legende-schmied.jpeg" alt="Der Schmied mit dem Schalk – großes Bild gegenüber dem Eingang">';mural.onclick=()=>showDetail('assets/legende-schmied.jpeg','Die Schmiede','DIE WAFFENKAMMER','Das große Schmiedebild gegenüber dem Eingang.','https://stephan-universum.de/legende','Die Legende lesen');
- const forge=object('forge website-forge oven-only',250,-400,2300,700,700);forge.innerHTML='<img src="assets/schmiede-ofen.png" alt="Der freistehende Schmiedeofen der Website, ohne Figur und Amboss"><span class="forge-glow" aria-hidden="true"></span>';
+ const mural=object('chamber-mural immersive-mural',-1350,-1000,2990,2700,1300,'','button');mural.setAttribute('aria-label','Das große Schmiedebild betrachten');mural.innerHTML='<img src="assets/legende-schmied.jpeg" alt="Der Schmied mit dem Schalk – großes Bild gegenüber dem Eingang">';mural.onclick=()=>showDetail('assets/legende-schmied.jpeg','Die Schmiede','DIE WAFFENKAMMER','Das große Schmiedebild gegenüber dem Eingang.','https://stephan-universum.de/legende','Die Legende lesen');
  for(const [series,x,rotation,z] of [['AS',-1330,'rotateY(90deg)',1150],['ST',1330,'rotateY(-90deg)',2450]]){
   const wall=object('bookwall',x,-430,z,1300,730,rotation);
   books.filter(b=>b.series===series).forEach(book=>wall.append(bookButton(book,'book')));
