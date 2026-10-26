@@ -45,3 +45,6 @@
 #entry .entry-copy h2{font-size:clamp(28px,3.5vw,43px)}
 #entry .entry-copy>p:not(.eyebrow){font-size:13px}
 @media(max-width:600px){#entry{--gate-width:86vw}#entry::after{border-width:18px 18px 20px;inset:20px calc((100% - var(--gate-width))/2 - 12px) 0}#entry .entry-copy{padding:110px 18px 38px}#entry .entry-copy h2{font-size:30px}}
+
+#soundToggle{position:fixed;z-index:30;right:22px;top:78px;padding:10px 14px;color:#ead5ae;background:#17140ee8;border:1px solid #a78b5c88;font-size:11px;box-shadow:0 3px 15px #0006}
+@media(max-width:750px){#soundToggle{right:18px;top:68px;font-size:10px;padding:9px 11px}}
