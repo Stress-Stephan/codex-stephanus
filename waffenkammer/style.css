@@ -33,3 +33,15 @@
 .entry-copy{z-index:5;left:0;top:0;transform:none;width:100%;height:100%;padding:clamp(95px,15vh,135px) 25px 36px;background:transparent;border:0;box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}.entry-copy .eyebrow{margin:0;text-shadow:0 2px 7px #000,0 0 15px #000}.entry-copy h2{margin:15px 0;font-size:clamp(32px,4.2vw,52px);text-shadow:0 3px 9px #000,0 0 40px #000}.entry-copy>p:not(.eyebrow){margin:0 0 12px;color:#eee2cc;text-shadow:0 2px 8px #000,0 0 18px #000}.entry-copy #entryOpen{margin-top:auto;min-width:215px;padding:16px 30px;box-shadow:0 5px 30px #000e}.entry-copy .text-button{margin:12px 0 0;padding:9px 16px;background:#130f09c9;border:1px solid #a1854b44}.entry-copy small{color:#e3d1ad;margin-top:12px;line-height:1.5;text-shadow:0 2px 7px #000,0 0 15px #000}
 @media(max-width:750px){.entry-copy{padding:115px 25px 35px}.entry-copy h2{font-size:33px}.entry-copy small{font-size:10px}.entry-leaf{background-size:200% 100%}#entry::after{border-width:15px}}
 @media(prefers-reduced-motion:reduce){.entry-leaf{transition:none}}
+
+/* Hohes Türportal statt einer bildschirmbreiten Holzfläche */
+#entry{--gate-width:min(760px,86vw,100dvh);background:linear-gradient(90deg,#0009,#0003 50%,#0009),url('assets/naturstein.png') center/650px 650px}
+#entry .entry-leaf{top:35px;height:calc(100% - 55px);width:calc(var(--gate-width)/2)}
+#entry .left-leaf{left:calc(50% - var(--gate-width)/2);right:auto}
+#entry .right-leaf{right:calc(50% - var(--gate-width)/2);left:auto}
+#entry::after{inset:15px calc((100% - var(--gate-width))/2 - 20px) 0;border-width:24px 24px 20px;box-shadow:inset 0 0 24px 5px #000b,0 12px 35px #000c;border-bottom-color:#68604f}
+#entry::before{background:radial-gradient(ellipse at 50% 45%,transparent 25%,#05060399 100%)}
+#entry .entry-copy{left:calc((100% - var(--gate-width))/2);width:var(--gate-width);padding:clamp(85px,15vh,125px) 25px 40px}
+#entry .entry-copy h2{font-size:clamp(28px,3.5vw,43px)}
+#entry .entry-copy>p:not(.eyebrow){font-size:13px}
+@media(max-width:600px){#entry{--gate-width:86vw}#entry::after{border-width:18px 18px 20px;inset:20px calc((100% - var(--gate-width))/2 - 12px) 0}#entry .entry-copy{padding:110px 18px 38px}#entry .entry-copy h2{font-size:30px}}
