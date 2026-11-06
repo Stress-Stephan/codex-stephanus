@@ -53,3 +53,11 @@
 .immersive-mural{padding:0;border:0;border-radius:0;box-shadow:none;background:#21150d;overflow:hidden}
 .immersive-mural img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 43%;pointer-events:none}
 .immersive-mural:hover{background:#21150d;border:0;filter:brightness(1.04)}
+
+#returnMist{position:fixed;inset:-8%;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 25% 35%,#f4f1e8 0%,#d9ddd8 46%,#e5e7df 78%);filter:blur(12px)}
+#returnMist::before,#returnMist::after{content:'';position:absolute;inset:-15%;background:radial-gradient(ellipse at 25% 70%,#fafaf4cc,transparent 60%),radial-gradient(ellipse at 75% 30%,#fffefa,transparent 60%);animation:returnFog 8s ease-in-out infinite alternate}
+#returnMist::after{animation-direction:alternate-reverse;animation-duration:6s;transform:scale(1.1)}
+@keyframes returnFog{to{transform:translate(7%,-4%) scale(1.15)}}
+#returnRide{white-space:normal}
+@media(max-width:750px){#roomNav{flex-wrap:wrap}#roomNav #returnRide{max-width:95%;flex-basis:90%}}
+@media(prefers-reduced-motion:reduce){#returnMist::before,#returnMist::after{animation:none}}
