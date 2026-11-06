@@ -20,8 +20,9 @@ function rideUI(){
 function segment(phase,z,yaw,duration){Object.assign(ride,{phase,elapsed:0,duration,fromZ:state.z,fromYaw:state.yaw,toZ:z,toYaw:yaw});rideUI();}
 function openChamberDoor(){const door=$('#chamberDoor');if(door){door.classList.add('opening-chamber');door.style.transform='translate3d(-175px,-270px,-4570px) rotateY(-105deg)';door.style.pointerEvents='none';}}
 function openEntry(){if(ride.mode!=='entry')return;ride.mode='opening';$('#entry').classList.add('opening');$('#entryOpen').disabled=true;rideUI();setTimeout(()=>{if(ride.mode==='opening'){$('#entry').hidden=true;document.body.classList.remove('at-entry');startRide();}},1900);}
-function startRide(){ride.mode='riding';ride.paused=false;ride.clock=performance.now();$('#rideCaption').textContent='Festhalten. Das Grau bleibt oben!';if(state.reduced){resetCoasterCamera();showMainRoute(true);state.z=state.targetZ=0;state.yaw=state.targetYaw=0;segment('approach',650,0,1400);}else{positionAtSummit();ride.phase='launch';ride.elapsed=0;ride.duration=1500;rideUI();}}
+function startRide(){ride.mode='riding';ride.paused=false;ride.clock=performance.now();$('#rideCaption').textContent='Festhalten. Das Grau bleibt oben!';if(state.reduced){$('#departureDarkness').style.opacity='0';resetCoasterCamera();showMainRoute(true);state.z=state.targetZ=0;state.yaw=state.targetYaw=0;segment('approach',650,0,1400);}else{positionAtSummit();ride.phase='launch';ride.elapsed=0;ride.duration=1500;rideUI();}}
 function arriveInside(){
+ $('#departureDarkness').hidden=true;
  resetCoasterCamera();showMainRoute(true);$('#entry').hidden=true;document.body.classList.remove('at-entry');openChamberDoor();
  state.room=true;state.z=state.targetZ=5700;state.yaw=state.targetYaw=0;state.pitch=10;ride.mode='arrived';ride.paused=false;
  $('#arrival').textContent='';$('#doorPrompt').hidden=true;setRoomActive('forge');rideUI();updateCamera();
@@ -50,6 +51,7 @@ function rideUpdate(dt,dialogOpen){
    const p=dropPoint(0);state.pathX=p.x-650+650*t*t;state.pitch=-23*t*t;
    if(t===1){ride.phase='drop';ride.elapsed=0;ride.duration=4200;}
  }else if(ride.phase==='drop'){
+   const darkness=Math.max(0,1-t/.3);$('#departureDarkness').style.opacity=String(darkness);if(darkness===0)$('#departureDarkness').hidden=true;
    const p=dropPoint(t),d=dropTangent(t),look=dropPoint(Math.min(1,t+.16));state.pathX=p.x;state.pathY=p.y;state.z=state.targetZ=p.z;
    const dx=look.x-p.x,dy=look.y-p.y;state.pitch=-Math.atan2(dx===0?d.y:dy,dx===0?Math.hypot(d.x,d.z):Math.abs(dx))*180/Math.PI;
    if(t===1){ride.phase='curve';ride.elapsed=0;ride.duration=1800;$('#rideCaption').textContent='Um die Kurve – hinein in die Legende.';}
