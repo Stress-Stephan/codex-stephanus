@@ -1,30 +1,82 @@
 'use strict';
-const ride={mode:'entry',paused:false,index:0,phase:'approach',elapsed:0,duration:0,fromZ:0,fromYaw:0,toZ:0,toYaw:0,clock:performance.now()};
-document.body.classList.add('at-entry');
-function addRails(room=false){const length=room?1900:6500;for(const x of [-125,115])plane('rail',x,294,length,10,length,'rotateX(90deg)').setAttribute('aria-hidden','true');plane('sleepers',-170,297,length,340,length,'rotateX(90deg)').setAttribute('aria-hidden','true');}
-function connectRoute(){buildRoom(true);addRails();}
+// One continuous scene: arrival and return never rebuild the corridor.
+const ride={mode:'entry',phase:'entry',paused:false,index:0,elapsed:0,duration:0,clock:performance.now()};
+const HOME_URL='https://stephan-universum.de/';
+const ROOM_ORIGIN=4600;
+document.body.classList.add('at-entry','guided');
+function addRails(){for(const x of [-125,115])plane('rail',x,294,6500,10,6500,'rotateX(90deg)');plane('sleepers',-170,297,6500,340,6500,'rotateX(90deg)');}
+function connectRoute(){buildRoom(true);addRails();for(const el of world.children)el.classList.add('route-main');}
 connectRoute();
-function rideUI(){const ready=ride.mode==='ready',active=ride.mode==='riding',arrived=ride.mode==='arrived';$('#rideHUD').hidden=!ready&&!active&&!arrived;$('#cart').hidden=!ready&&!active&&!arrived;$('#rideStart').hidden=!ready;$('#ridePause').hidden=!active;$('#rideNext').hidden=!active||ride.phase==='room';$('#rideExit').hidden=!arrived;$('#rideExit').textContent='Aussteigen und Waffen entdecken ↗';$('#rideInspect').hidden=!active||!['turn','gallery'].includes(ride.phase);$('#rideSkip').hidden=arrived;$('#ridePause').textContent=ride.paused?'Weiterfahren':'Pause';$('#ridePause').setAttribute('aria-pressed',String(ride.paused));document.body.classList.toggle('guided',ready||active||arrived);state.keys.clear();}
-function openEntry(){if(ride.mode!=='entry')return;ride.mode='opening';$('#entry').classList.add('opening');$('#entryOpen').disabled=true;setTimeout(()=>{if(ride.mode==='opening')readyRide();},1900);}
-function readyRide(){ride.mode='ready';$('#entry').hidden=true;document.body.classList.remove('at-entry');$('#rideCaption').textContent='Einsteigen. Die Legende zieht gleich links an dir vorbei.';rideUI();}
-function segment(phase,z,yaw,duration){ride.phase=phase;ride.fromZ=state.targetZ;ride.fromYaw=state.targetYaw;ride.toZ=z;ride.toYaw=yaw;ride.elapsed=0;ride.duration=duration;rideUI();}
-function startRide(){ride.mode='riding';ride.paused=false;ride.index=0;$('#rideCaption').textContent='Die Lore rollt los. Gleich dreht sich dein Sitz zur linken Wand.';segment('approach',650,0,1400);}
+function resetCoasterCamera(){state.pathX=0;state.pathY=0;state.pitch=0;state.roll=0;document.body.classList.remove('coaster');}
+function showMainRoute(show){document.body.classList.toggle('shaft-only',!show);}
+function positionAtSummit(){const p=dropPoint(0);state.pathX=p.x-650;state.pathY=p.y;state.z=state.targetZ=p.z;state.yaw=state.targetYaw=90;state.pitch=0;state.roll=0;document.body.classList.add('coaster');showMainRoute(false);updateCamera();}
+function rideUI(){
+ const active=ride.mode==='riding',inRoom=ride.mode==='arrived';
+ $('#cart').hidden=ride.mode==='entry';$('#rideHUD').hidden=!active;$('#ridePause').hidden=!active;
+ $('#ridePause').textContent=ride.paused?'Weiterfahren':'Pause';$('#ridePause').setAttribute('aria-pressed',String(ride.paused));
+ $('#rideInspect').hidden=!active||!['turn','gallery'].includes(ride.phase);$('#rideSkip').hidden=!active||ride.phase.startsWith('return');
+ $('#roomNav').hidden=!inRoom;state.keys.clear();
+}
+function segment(phase,z,yaw,duration){Object.assign(ride,{phase,elapsed:0,duration,fromZ:state.z,fromYaw:state.yaw,toZ:z,toYaw:yaw});rideUI();}
 function openChamberDoor(){const door=$('#chamberDoor');if(door){door.classList.add('opening-chamber');door.style.transform='translate3d(-175px,-270px,-4570px) rotateY(-105deg)';door.style.pointerEvents='none';}}
-const originalEnterRoom=enterRoom;
-function arriveInside(){originalEnterRoom();state.z=state.targetZ=850;state.yaw=state.targetYaw=0;addRails(true);ride.mode='arrived';ride.paused=false;$('#rideCaption').textContent='Endstation: mitten in der Waffenkammer. Bitte den Unsinn mitnehmen.';rideUI();updateCamera();}
-function nextPhase(){if(ride.phase==='approach'){segment('turn',900,-90,1600);}else if(ride.phase==='turn'){segment('gallery',3500,-90,16000);}else if(ride.phase==='gallery'){$('#rideCaption').textContent='Die Waffenkammer öffnet sich. Dein Sitz dreht sich nach vorn.';segment('forward',3950,0,2200);}else if(ride.phase==='forward'){openChamberDoor();$('#rideCaption').textContent='Bitte sitzen bleiben. Die Lore fährt in die Waffenkammer.';segment('room',5450,0,6000);}else if(ride.phase==='room')arriveInside();}
-function rideUpdate(dt,dialogOpen){const now=performance.now();dt=Math.min(1000,Math.max(0,now-ride.clock));ride.clock=now;if(ride.mode!=='riding'||ride.paused||dialogOpen||document.hidden)return;ride.elapsed+=dt;const p=Math.min(1,ride.elapsed/ride.duration);const ease=ride.phase==='approach'&&!state.reduced?(.2*p*p*p-1.1*p*p+1.9*p):['gallery','turn'].includes(ride.phase)?p:p*p*(3-2*p);state.targetZ=ride.fromZ+(ride.toZ-ride.fromZ)*(state.reduced?(p===1?1:0):ease);state.targetYaw=ride.fromYaw+(ride.toYaw-ride.fromYaw)*(state.reduced?(p===1?1:0):ease);state.z=state.targetZ;state.yaw=state.targetYaw;if(['turn','gallery'].includes(ride.phase)){ride.index=Math.max(0,Math.min(gallery.length-1,Math.round((state.z-1151)/1000)));$('#rideCaption').textContent=`${ride.index+1} / ${gallery.length} · ${gallery[ride.index].title} · Zum Anhalten auf ein Bild klicken`;}if(p===1)nextPhase();}
-function freeWalk(){const wasEntry=['entry','opening'].includes(ride.mode);const outsideRoom=!state.room;ride.mode='free';ride.paused=false;$('#entry').hidden=true;document.body.classList.remove('at-entry');rideUI();if(wasEntry){state.z=state.targetZ=0;state.yaw=state.targetYaw=0;}if(outsideRoom){const z=Math.min(4020,state.z),yaw=state.yaw;buildCorridor();addRails();state.z=state.targetZ=z;state.yaw=state.targetYaw=yaw;updateCamera();}}
-$('#entryOpen').onclick=openEntry;$('#entryFree').onclick=freeWalk;$('#rideStart').onclick=startRide;
-$('#ridePause').onclick=()=>{ride.paused=!ride.paused;rideUI();};
-$('#rideNext').onclick=()=>{ride.paused=false;const next=ride.index+1;if(ride.phase==='approach'){segment('turn',900,-90,1800);}else if(next<gallery.length&&['turn','gallery'].includes(ride.phase)){const target=1151+next*1000;segment('gallery',3500,-90,Math.max(4000,(3500-target)/162.5*1000));state.z=state.targetZ=target;ride.fromZ=target;ride.fromYaw=-90;state.yaw=state.targetYaw=-90;ride.index=next;}else{segment('forward',3950,0,2500);$('#rideCaption').textContent='Weiter zur Waffenkammer.';}};
-$('#rideInspect').onclick=()=>openGallery(gallery[ride.index]);$('#rideSkip').onclick=arriveInside;
-$('#rideFree').onclick=freeWalk;$('#rideExit').onclick=()=>{ride.mode='free';rideUI();$('#arrival').textContent='Willkommen in der Waffenkammer. Wähle eine Wand oder ein Buch.';};
-enterRoom=function(){ride.mode='free';$('#entry').hidden=true;document.body.classList.remove('at-entry');rideUI();originalEnterRoom();addRails(true);};
-const originalReturnToGang=returnToGang;returnToGang=function(){originalReturnToGang();connectRoute();ride.mode='ready';ride.paused=false;$('#rideCaption').textContent='Noch eine Runde? Oder lieber zu Fuß erkunden?';rideUI();};
-$('#enter').onclick=enterRoom;$('#skip').onclick=()=>state.room?returnToGang():enterRoom();rideUI();
-
-// Räumlicher Auftakt: steiler Schacht und anschließende Kurve zur Galerie.
+function openEntry(){if(ride.mode!=='entry')return;ride.mode='opening';$('#entry').classList.add('opening');$('#entryOpen').disabled=true;rideUI();setTimeout(()=>{if(ride.mode==='opening'){$('#entry').hidden=true;document.body.classList.remove('at-entry');startRide();}},1900);}
+function startRide(){ride.mode='riding';ride.paused=false;ride.clock=performance.now();$('#rideCaption').textContent='Festhalten. Das Grau bleibt oben!';if(state.reduced){resetCoasterCamera();showMainRoute(true);state.z=state.targetZ=0;state.yaw=state.targetYaw=0;segment('approach',650,0,1400);}else{positionAtSummit();ride.phase='launch';ride.elapsed=0;ride.duration=1500;rideUI();}}
+function arriveInside(){
+ resetCoasterCamera();showMainRoute(true);$('#entry').hidden=true;document.body.classList.remove('at-entry');openChamberDoor();
+ state.room=true;state.z=state.targetZ=5700;state.yaw=state.targetYaw=0;state.pitch=10;ride.mode='arrived';ride.paused=false;
+ $('#arrival').textContent='';$('#doorPrompt').hidden=true;setRoomActive('forge');rideUI();updateCamera();
+}
+enterRoom=arriveInside;
+function nextPhase(){
+ if(ride.phase==='approach')segment('turn',900,-90,1600);
+ else if(ride.phase==='turn')segment('gallery',3500,-90,16000);
+ else if(ride.phase==='gallery'){ $('#rideCaption').textContent='Die Waffenkammer öffnet sich.';segment('forward',3950,0,2200);}
+ else if(ride.phase==='forward'){openChamberDoor();$('#rideCaption').textContent='Bitte sitzen bleiben. Wir fahren in die Waffenkammer.';segment('room',5700,0,6500);}
+ else if(ride.phase==='room')arriveInside();
+}
+const mist=document.createElement('div');mist.id='returnMist';mist.setAttribute('aria-hidden','true');mist.hidden=true;document.body.append(mist);
+const returnButton=document.createElement('button');returnButton.id='returnRide';returnButton.textContent='Zurück zur Website ↶';$('#roomNav').append(returnButton);
+function beginReturn(){
+ if(ride.mode!=='arrived')return;
+ ride.mode='riding';ride.phase='return-align';ride.elapsed=0;ride.duration=1000;ride.paused=false;ride.clock=performance.now();
+ ride.returnFrom={z:state.z,yaw:state.yaw,pitch:state.pitch||0};mist.removeAttribute('hidden');mist.style.opacity='0';
+ $('#rideCaption').textContent='Die Lore bringt dich zurück zum Stephan-Universum.';rideUI();
+}
+function rideUpdate(dt,dialogOpen){
+ const now=performance.now();dt=Math.min(1000,Math.max(0,now-ride.clock));ride.clock=now;
+ if(ride.mode!=='riding'||ride.paused||dialogOpen||document.hidden)return;
+ ride.elapsed+=dt;const t=Math.min(1,ride.elapsed/ride.duration),smooth=t*t*(3-2*t);
+ if(ride.phase==='launch'){
+   const p=dropPoint(0);state.pathX=p.x-650+650*t*t;state.pitch=-23*t*t;
+   if(t===1){ride.phase='drop';ride.elapsed=0;ride.duration=4200;}
+ }else if(ride.phase==='drop'){
+   const p=dropPoint(t),d=dropTangent(t),look=dropPoint(Math.min(1,t+.16));state.pathX=p.x;state.pathY=p.y;state.z=state.targetZ=p.z;
+   const dx=look.x-p.x,dy=look.y-p.y;state.pitch=-Math.atan2(dx===0?d.y:dy,dx===0?Math.hypot(d.x,d.z):Math.abs(dx))*180/Math.PI;
+   if(t===1){ride.phase='curve';ride.elapsed=0;ride.duration=1800;$('#rideCaption').textContent='Um die Kurve – hinein in die Legende.';}
+ }else if(ride.phase==='curve'){
+   const p=bendPoint(t);state.pathX=p.x;state.pathY=0;state.z=state.targetZ=p.z;state.yaw=state.targetYaw=90*(1-t);state.pitch=0;state.roll=-8*Math.sin(Math.PI*t);
+   if(t>.7)showMainRoute(true);
+   if(t===1){resetCoasterCamera();state.z=state.targetZ=0;state.yaw=state.targetYaw=0;segment('approach',650,0,1400);}
+ }else if(ride.phase==='return-align'){
+   const p=ride.returnFrom;state.z=state.targetZ=p.z+(5700-p.z)*smooth;state.yaw=state.targetYaw=p.yaw*(1-smooth);state.pitch=p.pitch*(1-smooth);
+   if(t===1){ride.phase='return';ride.elapsed=0;ride.duration=9000;state.room=false;rideUI();}
+ }else if(ride.phase==='return'){
+   const progress=t<.15?t*t/.2775:(t-.075)/.925;state.z=state.targetZ=5700-3700*progress;state.yaw=state.targetYaw=0;
+   const fog=Math.max(0,Math.min(1,(t-.45)/.4));mist.style.opacity=String(fog*fog*(3-2*fog));
+   if(t===1){mist.style.opacity='1';ride.phase='return-fog';ride.mode='leaving';$('#ridePause').disabled=true;$('#rideCaption').textContent='Zurück zum Stephan-Universum …';setTimeout(()=>window.location.assign(HOME_URL),1200);}
+ }else if(ride.phase==='return-fog'){
+   if(t===1){ride.mode='leaving';window.location.assign(HOME_URL);}
+ }else{
+   const travel=ride.phase==='approach'&&!state.reduced?.2*t*t*t-1.1*t*t+1.9*t:['gallery','turn'].includes(ride.phase)?t:smooth;
+   state.z=state.targetZ=ride.fromZ+(ride.toZ-ride.fromZ)*travel;state.yaw=state.targetYaw=ride.fromYaw+(ride.toYaw-ride.fromYaw)*smooth;
+   if(['turn','gallery'].includes(ride.phase)){ride.index=Math.max(0,Math.min(gallery.length-1,Math.round((state.z-1151)/1000)));$('#rideCaption').textContent=`${ride.index+1} / ${gallery.length} · ${gallery[ride.index].title} · Zum Anhalten auf ein Bild klicken`;}
+   if(t===1)nextPhase();
+ }
+}
+$('#entryOpen').onclick=openEntry;$('#ridePause').onclick=()=>{ride.paused=!ride.paused;rideUI();};$('#rideInspect').onclick=()=>openGallery(gallery[ride.index]);$('#rideSkip').onclick=arriveInside;$('#enter').onclick=arriveInside;$('#skip').onclick=arriveInside;returnButton.onclick=beginReturn;
+$('#restart').onclick=()=>window.location.reload();
+// Room views stay seated, in the same connected coordinate system.
+roomView=function(view){if(ride.mode!=='arrived')return;state.targetZ=ROOM_ORIGIN+(view==='forge'?1100:1800);state.targetYaw=view==='left'?-90:view==='right'?90:0;state.pitch=view==='forge'?10:0;setRoomActive(view);};
 function dropPoint(u){const v=1-u;return{x:v*v*v*-3500+3*v*v*u*-2300+3*v*u*u*-2200+u*u*u*-1000,y:v*v*v*-3000+3*v*v*u*-3000,z:-1000};}
 function dropTangent(u){const v=1-u;return{x:3*v*v*1200+6*v*u*100+3*u*u*1200,y:6*v*u*3000,z:0};}
 function bendPoint(u){const a=-Math.PI/2+u*Math.PI/2;return{x:-1000+Math.cos(a)*1000,y:0,z:Math.sin(a)*1000};}
@@ -39,56 +91,5 @@ function buildCoasterIntro(){
  for(let i=0;i<28;i++)add(dropPoint(i/28),dropPoint((i+1)/28),i+1);
  for(let i=0;i<20;i++)add(bendPoint(i/20),bendPoint((i+1)/20),i+29);
 }
-function resetCoasterCamera(){state.pathX=0;state.pathY=0;state.pitch=0;state.roll=0;document.body.classList.remove('coaster');}
-function positionAtSummit(){const p=dropPoint(0);state.pathX=p.x-650;state.pathY=p.y;state.z=state.targetZ=p.z;state.yaw=state.targetYaw=90;state.pitch=0;state.roll=0;document.body.classList.add('coaster');updateCamera();}
-const galleryRideUI=rideUI;rideUI=function(){galleryRideUI();$('#rideStart').hidden=true;if(ride.mode==='opening')$('#cart').hidden=false;if(['launch','drop','curve'].includes(ride.phase)){$('#rideNext').hidden=true;$('#rideInspect').hidden=true;}};
-const galleryStartRide=startRide;startRide=function(){if(state.reduced){resetCoasterCamera();state.z=state.targetZ=0;state.yaw=state.targetYaw=0;galleryStartRide();return;}positionAtSummit();ride.mode='riding';ride.paused=false;ride.phase='launch';ride.elapsed=0;ride.duration=1500;$('#rideCaption').textContent='Festhalten. Das Grau bleibt oben!';ride.clock=performance.now();rideUI();};
-readyRide=function(){$('#entry').hidden=true;document.body.classList.remove('at-entry');startRide();};
-const galleryOpenEntry=openEntry;openEntry=function(){galleryOpenEntry();rideUI();};
-const galleryRideUpdate=rideUpdate;rideUpdate=function(dt,dialogOpen){if(!['launch','drop','curve'].includes(ride.phase)||ride.mode!=='riding'){galleryRideUpdate(dt,dialogOpen);return;}const now=performance.now();dt=Math.min(1000,Math.max(0,now-ride.clock));ride.clock=now;if(ride.paused||dialogOpen||document.hidden)return;ride.elapsed+=dt;const t=Math.min(1,ride.elapsed/ride.duration);
- if(ride.phase==='launch'){const p=dropPoint(0);state.pathX=p.x-650+650*t*t;state.pathY=p.y;state.z=state.targetZ=p.z;state.yaw=state.targetYaw=90;state.pitch=-23*t*t;state.roll=0;if(t===1){ride.phase='drop';ride.elapsed=0;ride.duration=4200;}}
- else if(ride.phase==='drop'){const u=t,p=dropPoint(u),d=dropTangent(u);state.pathX=p.x;state.pathY=p.y;state.z=state.targetZ=p.z;state.yaw=state.targetYaw=90;const look=dropPoint(Math.min(1,u+.16)),aheadX=look.x-p.x,aheadY=look.y-p.y;state.pitch=-Math.atan2(aheadX===0?d.y:aheadY,aheadX===0?Math.hypot(d.x,d.z):Math.abs(aheadX))*180/Math.PI;state.roll=0;if(t===1){ride.phase='curve';ride.elapsed=0;ride.duration=1800;$('#rideCaption').textContent='Einmal um die Kurve – und hinein in die Legende.';rideUI();}}
- else{const p=bendPoint(t);state.pathX=p.x;state.pathY=0;state.z=state.targetZ=p.z;state.yaw=state.targetYaw=90*(1-t);state.pitch=0;state.roll=-8*Math.sin(Math.PI*t);if(t===1){resetCoasterCamera();state.z=state.targetZ=0;state.yaw=state.targetYaw=0;galleryStartRide();}}
-};
-const galleryFreeWalk=freeWalk;freeWalk=function(){const fromCoaster=document.body.classList.contains('coaster');resetCoasterCamera();if(fromCoaster){state.z=state.targetZ=0;state.yaw=state.targetYaw=0;}galleryFreeWalk();};
-const galleryArriveInside=arriveInside;arriveInside=function(){resetCoasterCamera();galleryArriveInside();state.z=state.targetZ=1100;state.pitch=10;updateCamera();};
-const galleryEnterRoom=enterRoom;enterRoom=function(){resetCoasterCamera();galleryEnterRoom();state.z=state.targetZ=1100;state.pitch=10;rideUI();updateCamera();};
-const galleryReturnToGang=returnToGang;returnToGang=function(){resetCoasterCamera();galleryReturnToGang();buildCoasterIntro();ride.mode='entry';ride.phase='entry';ride.paused=false;$('#entry').hidden=false;$('#entry').classList.remove('opening');$('#entryOpen').disabled=false;document.body.classList.add('at-entry');positionAtSummit();rideUI();};
-$('#entryOpen').onclick=openEntry;$('#entryFree').onclick=freeWalk;$('#rideStart').onclick=startRide;$('#rideFree').onclick=freeWalk;$('#rideSkip').onclick=arriveInside;$('#enter').onclick=enterRoom;$('#skip').onclick=()=>state.room?returnToGang():enterRoom();
+
 buildCoasterIntro();positionAtSummit();rideUI();
-
-
-
-
-
-// Rückfahrt: erst einsteigen, dann rückwärts durch den Gang und im Nebel heimkehren.
-const HOME_URL='https://stephan-universum.de/';
-const returnButton=document.createElement('button');returnButton.id='returnRide';returnButton.textContent='Mit der Lore zurück zur Website ↶';$('#roomNav').append(returnButton);
-const mist=document.createElement('div');mist.id='returnMist';mist.setAttribute('aria-hidden','true');mist.hidden=true;document.body.append(mist);
-const routeRideUI=rideUI;rideUI=function(){routeRideUI();const returning=['return-align','return'].includes(ride.phase)&&ride.mode==='riding';returnButton.disabled=returning;if(returning){$('#rideNext').hidden=true;$('#rideInspect').hidden=true;$('#rideSkip').hidden=true;$('#rideFree').hidden=true;}else{$('#rideFree').hidden=false;}if(state.room)$('#skip').textContent='Mit der Lore zurück zur Website ↶';};
-function beginReturn(){
- if(!state.room||ride.mode==='riding')return;
- ride.mode='riding';ride.phase='return-align';ride.elapsed=0;ride.duration=1200;ride.paused=false;ride.clock=performance.now();
- ride.returnFrom={z:state.z,yaw:state.yaw,pitch:state.pitch||0};
- $('#rideCaption').textContent='Bitte einsteigen. Die Lore bringt dich zurück zum Stephan-Universum.';mist.hidden=false;mist.style.opacity='0';rideUI();
-}
-function returnToConnectedRoute(){
- originalReturnToGang();connectRoute();buildCoasterIntro();resetCoasterCamera();openChamberDoor();
- state.z=state.targetZ=5700;state.yaw=state.targetYaw=0;ride.phase='return';ride.elapsed=0;ride.duration=9000;
- $('#rideCaption').textContent='Rückwärts durch die Legende. Gleich bist du wieder zu Hause.';rideUI();
-}
-const outwardRideUpdate=rideUpdate;rideUpdate=function(dt,dialogOpen){
- if(ride.mode!=='riding'||!['return-align','return'].includes(ride.phase)){outwardRideUpdate(dt,dialogOpen);return;}
- const now=performance.now();dt=Math.min(1000,Math.max(0,now-ride.clock));ride.clock=now;if(ride.paused||dialogOpen||document.hidden)return;
- ride.elapsed+=dt;const t=Math.min(1,ride.elapsed/ride.duration),smooth=t*t*(3-2*t);
- if(ride.phase==='return-align'){
-   const p=ride.returnFrom;state.z=state.targetZ=p.z+(1100-p.z)*smooth;state.yaw=state.targetYaw=p.yaw*(1-smooth);state.pitch=p.pitch*(1-smooth);
-   if(t===1)returnToConnectedRoute();
- }else{
-   // Facing the armory while the cart reverses along the same straight rails.
-   const progress=t*t*(2-t);state.z=state.targetZ=5700-3700*progress;state.yaw=state.targetYaw=0;
-   const fog=Math.max(0,Math.min(1,(t-.48)/.42));mist.style.opacity=String(fog*fog*(3-2*fog));
-   if(t===1){ride.mode='leaving';$('#rideCaption').textContent='Zurück zum Stephan-Universum …';window.location.assign(HOME_URL);}
- }
-};
-returnButton.onclick=beginReturn;$('#skip').onclick=()=>state.room?beginReturn():enterRoom();rideUI();

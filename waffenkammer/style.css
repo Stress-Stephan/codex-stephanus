@@ -61,3 +61,20 @@
 #returnRide{white-space:normal}
 @media(max-width:750px){#roomNav{flex-wrap:wrap}#roomNav #returnRide{max-width:95%;flex-basis:90%}}
 @media(prefers-reduced-motion:reduce){#returnMist::before,#returnMist::after{animation:none}}
+
+/* Sitzende Bedienung: ein einziges Bedienfeld in der Lore. */
+.shaft-only .route-main{visibility:hidden}
+.guided .chapter,.guided footer,.guided #arrival{display:none!important}
+.at-entry #cartPanel{display:none}
+.brand img{display:block;width:220px;height:auto;max-height:72px;object-fit:contain}
+#cart{height:190px;bottom:-15px}
+#cartPanel{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:6;width:min(760px,76vw);text-align:center}
+#cartPanel #roomNav{position:static;transform:none;display:flex;justify-content:center;gap:6px;white-space:normal;width:100%;margin:0}
+#cartPanel #roomNav button{padding:10px 12px;font-size:11px;max-width:none;background:#211f18ee}
+#cartPanel #roomNav button.active{background:#c4a36b;color:#201b12}
+#cartPanel #rideHUD{position:static;transform:none;width:100%}
+#cartPanel #rideHUD p{display:block;font:11px/1.4 Georgia,serif;padding:2px 4px;margin:0 0 7px;background:transparent}
+#cartPanel #rideHUD button{padding:9px 13px}
+#returnMist{position:fixed;inset:0;width:100vw;height:100dvh;z-index:1000;pointer-events:none;filter:none;background:#e6e9e4;opacity:0;will-change:opacity;isolation:isolate}
+#returnMist::before,#returnMist::after{inset:-15%;background:radial-gradient(ellipse at 20% 70%,#fff 0%,transparent 65%),radial-gradient(ellipse at 80% 20%,#b9c4bd 0%,transparent 60%);filter:none;animation:returnFog 8s ease-in-out infinite alternate}
+@media(max-width:750px){.brand img{width:165px;max-height:55px}#cart{height:215px;bottom:-12px}#cartPanel{bottom:20px;width:76vw}#cartPanel #roomNav{flex-wrap:wrap}#cartPanel #roomNav button{flex:1 1 42%;font-size:10px;padding:9px 5px}#cartPanel #roomNav #returnRide{flex-basis:42%;max-width:none}#cartPanel #rideHUD p{font-size:10px}#cartPanel #rideHUD button{padding:8px 10px;font-size:10px}}

@@ -54,3 +54,6 @@ Die Eingangstür startet die Fahrt direkt. Ein zweiter Startklick entfällt. Die
 ## Massives Eingangstor
 Die erste Tür ist jetzt ein großes altes Eichentor mit geschmiedeten Eisenbändern, Ringgriffen und sichtbarer Holzmaserung. Die Tür besteht aus zwei animierten Flügeln und öffnet in etwa 1,8 Sekunden. Die anschließende Abfahrt startet ohne zweiten Klick. Eingangsdarstellung und automatischer Start wurden im Browser geprüft.
 
+
+## Bedienung – aktuelle Fassung
+Der Besucher bleibt während des gesamten Besuchs in der Lore. Die Wandansichten und die Rückfahrt sind im Bedienfeld der Lore erreichbar. Die Rückfahrt verwendet dieselbe Szene, blendet ab ungefähr der Hälfte Nebel ein und kehrt nach vollständiger Verhüllung zur Startseite https://stephan-universum.de/ zurück. Das Original-Logo liegt in assets/stephan-universum-logo.svg. Beim Aktualisieren index.html, style.css und ride.js sowie dieses Logo übernehmen; alternativ den gesamten Projektordner ersetzen.
