@@ -88,3 +88,6 @@ header{z-index:7}
 
 /* Beim Öffnen darf die Steinfläche der Eingangsebene den Durchgang nicht verdecken. */
 #entry.opening{background:transparent!important}
+
+/* Der Eingang hat zu keinem Zeitpunkt eine flächige Steinwand hinter den Türflügeln. */
+#entry{background:transparent!important;background-image:none!important}
