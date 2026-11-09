@@ -48,10 +48,11 @@ function rideUpdate(dt,dialogOpen){
  if(ride.mode!=='riding'||ride.paused||dialogOpen||document.hidden)return;
  ride.elapsed+=dt;const t=Math.min(1,ride.elapsed/ride.duration),smooth=t*t*(3-2*t);
  if(ride.phase==='launch'){
+   const darkness=1-Math.max(0,Math.min(1,(t-.35)/.5));
+   $('#departureDarkness').style.opacity=String(darkness);
    const p=dropPoint(0);state.pathX=p.x-650+650*t*t;state.pitch=-23*t*t;
-   if(t===1){ride.phase='drop';ride.elapsed=0;ride.duration=4200;}
+   if(t===1){$('#departureDarkness').hidden=true;ride.phase='drop';ride.elapsed=0;ride.duration=4200;}
  }else if(ride.phase==='drop'){
-   const darkness=1-Math.max(0,Math.min(1,(t-.4)/.3));$('#departureDarkness').style.opacity=String(darkness);if(darkness===0)$('#departureDarkness').hidden=true;
    const p=dropPoint(t),d=dropTangent(t),look=dropPoint(Math.min(1,t+.16));state.pathX=p.x;state.pathY=p.y;state.z=state.targetZ=p.z;
    const dx=look.x-p.x,dy=look.y-p.y;state.pitch=-Math.atan2(dx===0?d.y:dy,dx===0?Math.hypot(d.x,d.z):Math.abs(dx))*180/Math.PI;
    if(t===1){ride.phase='curve';ride.elapsed=0;ride.duration=1800;$('#rideCaption').textContent='Um die Kurve – hinein in die Legende.';}
